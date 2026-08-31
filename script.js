@@ -1,80 +1,210 @@
-/* ================================
-   NAVEGAÇÃO E MENU MOBILE
-================================ */
-const menu = document.getElementById("menu");
-const menuMobile = document.getElementById("menuMobile");
+const menuToggle = document.getElementById("menuToggle");
+const mainNav = document.getElementById("mainNav");
 
-menuMobile.addEventListener("click", () => {
-    menu.classList.toggle("active");
+menuToggle.addEventListener("click", () => {
+    mainNav.classList.toggle("active");
 });
 
-document.querySelectorAll("nav a").forEach(link => {
-    link.addEventListener("click", () => {
-        menu.classList.remove("active");
-    });
+document.querySelectorAll("#mainNav a").forEach(link => {
+    link.addEventListener("click", () => mainNav.classList.remove("active"));
 });
 
 document.querySelectorAll("[data-scroll]").forEach(button => {
     button.addEventListener("click", () => {
         const target = document.querySelector(button.dataset.scroll);
-
-        if (target) {
-            target.scrollIntoView({
-                behavior: "smooth"
-            });
-        }
+        if (target) target.scrollIntoView({ behavior: "smooth" });
     });
 });
 
-/* ================================
-   MODAL
-================================ */
+
+/* ==========================
+   INDICADOR LATERAL
+========================== */
+
+const slides = [...document.querySelectorAll(".slide")];
+const indexItems = [...document.querySelectorAll(".side-index span")];
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const index = slides.indexOf(entry.target);
+            indexItems.forEach(item => item.classList.remove("active"));
+            if (indexItems[index]) indexItems[index].classList.add("active");
+        }
+    });
+}, { threshold: 0.45 });
+
+slides.forEach(slide => observer.observe(slide));
+
+indexItems.forEach((item, index) => {
+    item.addEventListener("click", () => {
+        slides[index].scrollIntoView({ behavior: "smooth" });
+    });
+});
+
+
+/* ==========================
+   MODAIS
+========================== */
+
 const modal = document.getElementById("modal");
 const modalTitle = document.getElementById("modalTitle");
 const modalText = document.getElementById("modalText");
-const fecharModal = document.getElementById("fecharModal");
+const modalClose = document.getElementById("modalClose");
 
-function abrirModal(titulo, texto) {
-    modalTitle.textContent = titulo;
-    modalText.textContent = texto;
-    modal.classList.add("show");
-    modal.setAttribute("aria-hidden", "false");
-}
+const modalData = {
+    sobre: {
+        title: "SOBRE O PROJETO",
+        text: "O Atleta em Foco é uma proposta de plataforma web educativa voltada à disseminação de informações sobre saúde, nutrição, hidratação, recuperação, prevenção de lesões e hábitos saudáveis. A proposta utiliza HTML, CSS e JavaScript para construir uma experiência digital intuitiva."
+    },
+    antes: {
+        title: "ANTES DO TREINO",
+        text: "Este espaço pode receber orientações e conteúdos selecionados pela equipe do projeto sobre preparação alimentar e cuidados prévios à atividade física."
+    },
+    durante: {
+        title: "DURANTE O TREINO",
+        text: "Este módulo pode apresentar informações educativas relacionadas à hidratação, percepção corporal e cuidados durante a prática esportiva."
+    },
+    depois: {
+        title: "DEPOIS DO TREINO",
+        text: "Este espaço pode reunir informações sobre recuperação, alimentação pós-atividade e descanso, sempre utilizando referências confiáveis."
+    }
+};
 
-function fecharJanela() {
-    modal.classList.remove("show");
-    modal.setAttribute("aria-hidden", "true");
-}
+document.querySelectorAll("[data-modal]").forEach(button => {
+    button.addEventListener("click", () => {
+        const data = modalData[button.dataset.modal];
 
-const btnProjeto = document.getElementById("btnProjeto");
-if (btnProjeto) {
-    btnProjeto.addEventListener("click", () => {
-        abrirModal(
-            "Thynk Unlimited",
-            "Sports and Unity é uma iniciativa voltada à aproximação de pessoas através do esporte, destacando a diversidade cultural, igualdade, diplomacia esportiva e impacto social positivo."
-        );
-    });
-}
+        if (!data) return;
 
-document.querySelectorAll(".info-card").forEach(card => {
-    card.addEventListener("click", () => {
-        abrirModal(
-            card.dataset.modalTitle,
-            card.dataset.modalText
-        );
+        modalTitle.textContent = data.title;
+        modalText.textContent = data.text;
+        modal.classList.add("show");
     });
 });
 
-fecharModal.addEventListener("click", fecharJanela);
+function closeModal() {
+    modal.classList.remove("show");
+}
+
+modalClose.addEventListener("click", closeModal);
 
 modal.addEventListener("click", event => {
-    if (event.target === modal) {
-        fecharJanela();
-    }
+    if (event.target === modal) closeModal();
 });
 
 document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-        fecharJanela();
-    }
+    if (event.key === "Escape") closeModal();
 });
+
+
+/* ==========================
+   HIDRATAÇÃO
+========================== */
+
+let water = 0;
+const waterGoal = 2000;
+
+function updateWater() {
+    document.getElementById("waterValue").textContent = water;
+
+    const percent = Math.min((water / waterGoal) * 100, 100);
+    document.getElementById("waterBar").style.width = percent + "%";
+}
+
+document.querySelectorAll(".water-add").forEach(button => {
+    button.addEventListener("click", () => {
+        water += Number(button.dataset.water);
+        if (water > waterGoal) water = waterGoal;
+        updateWater();
+    });
+});
+
+document.getElementById("waterReset").addEventListener("click", () => {
+    water = 0;
+    updateWater();
+});
+
+
+/* ==========================
+   RECUPERAÇÃO
+========================== */
+
+const recoveryChecks = document.querySelectorAll(".recovery-check");
+const recoveryScore = document.getElementById("recoveryScore");
+
+recoveryChecks.forEach(check => {
+    check.addEventListener("change", () => {
+        const total = [...recoveryChecks].filter(item => item.checked).length;
+        recoveryScore.textContent = total;
+    });
+});
+
+
+/* ==========================
+   MAPA CORPORAL
+========================== */
+
+const bodyInfo = document.getElementById("bodyInfo");
+
+const bodyCare = {
+    "Cabeça e pescoço": "Atenção à postura, preparação e sinais de desconforto. Em caso de sintomas, procure orientação profissional.",
+    "Ombros": "A preparação adequada e o controle da carga de treino são importantes para o cuidado com a região.",
+    "Joelhos": "Aquecimento, técnica e respeito aos limites individuais são aspectos importantes da prevenção.",
+    "Tornozelos": "Mobilidade, preparação e atenção ao terreno podem fazer parte dos cuidados preventivos."
+};
+
+document.querySelectorAll(".body-part").forEach(button => {
+    button.addEventListener("click", () => {
+        const part = button.dataset.part;
+
+        bodyInfo.innerHTML = `
+            <strong>${part.toUpperCase()}</strong>
+            <span>${bodyCare[part]}</span>
+        `;
+    });
+});
+
+
+/* ==========================
+   CALCULADORA
+========================== */
+
+document.getElementById("calculate").addEventListener("click", () => {
+
+    const age = Number(document.getElementById("age").value);
+    const weight = Number(document.getElementById("weight").value);
+    const heightCm = Number(document.getElementById("height").value);
+    const activity = Number(document.getElementById("activity").value);
+
+    const resultBox = document.getElementById("resultBox");
+
+    if (!age || !weight || !heightCm) {
+        resultBox.classList.add("show");
+        document.getElementById("imcResult").textContent = "ERRO";
+        document.getElementById("basalResult").textContent = "—";
+        document.getElementById("dailyResult").textContent = "PREENCHA";
+        return;
+    }
+
+    const heightM = heightCm / 100;
+
+    const imc = weight / (heightM * heightM);
+
+    // Estimativa educativa baseada na equação de Mifflin-St Jeor.
+    const basal = (10 * weight) + (6.25 * heightCm) - (5 * age) + 5;
+
+    const daily = basal * activity;
+
+    document.getElementById("imcResult").textContent = imc.toFixed(1);
+    document.getElementById("basalResult").textContent = Math.round(basal);
+    document.getElementById("dailyResult").textContent = Math.round(daily);
+
+    resultBox.classList.add("show");
+});
+
+
+/* Inicialização */
+
+indexItems[0].classList.add("active");
+updateWater();
