@@ -167,44 +167,83 @@ document.querySelectorAll(".body-part").forEach(button => {
 
 
 /* ==========================
-   CALCULADORA
+   CALCULADORA DE DESEMPENHO
 ========================== */
 
-document.getElementById("calculate").addEventListener("click", () => {
+const calculateButton = document.getElementById("calculate");
 
-    const age = Number(document.getElementById("age").value);
-    const weight = Number(document.getElementById("weight").value);
-    const heightCm = Number(document.getElementById("height").value);
-    const activity = Number(document.getElementById("activity").value);
+calculateButton.addEventListener("click", function () {
+
+    // Pegar os valores dos campos
+    const ageInput = document.getElementById("age").value;
+    const weightInput = document.getElementById("weight").value;
+    const heightInput = document.getElementById("height").value;
+    const activityInput = document.getElementById("activity").value;
+
+    // Aceita ponto ou vírgula
+    const age = parseFloat(ageInput.replace(",", "."));
+    const weight = parseFloat(weightInput.replace(",", "."));
+    const heightCm = parseFloat(heightInput.replace(",", "."));
+    const activity = parseFloat(activityInput);
 
     const resultBox = document.getElementById("resultBox");
 
-    if (!age || !weight || !heightCm) {
+    // Verificação dos dados
+    if (
+        isNaN(age) ||
+        isNaN(weight) ||
+        isNaN(heightCm) ||
+        age <= 0 ||
+        weight <= 0 ||
+        heightCm <= 0
+    ) {
+
         resultBox.classList.add("show");
+
         document.getElementById("imcResult").textContent = "ERRO";
         document.getElementById("basalResult").textContent = "—";
         document.getElementById("dailyResult").textContent = "PREENCHA";
+
         return;
     }
 
+    // Converter altura de centímetros para metros
     const heightM = heightCm / 100;
+
+    // ==========================
+    // CÁLCULO DO IMC
+    // ==========================
 
     const imc = weight / (heightM * heightM);
 
-    // Estimativa educativa baseada na equação de Mifflin-St Jeor.
-    const basal = (10 * weight) + (6.25 * heightCm) - (5 * age) + 5;
+    // ==========================
+    // METABOLISMO BASAL
+    // ==========================
+
+    const basal =
+        (10 * weight) +
+        (6.25 * heightCm) -
+        (5 * age) +
+        5;
+
+    // ==========================
+    // GASTO DIÁRIO ESTIMADO
+    // ==========================
 
     const daily = basal * activity;
 
-    document.getElementById("imcResult").textContent = imc.toFixed(1);
-    document.getElementById("basalResult").textContent = Math.round(basal);
-    document.getElementById("dailyResult").textContent = Math.round(daily);
+    // ==========================
+    // MOSTRAR RESULTADOS
+    // ==========================
+
+    document.getElementById("imcResult").textContent =
+        imc.toFixed(1).replace(".", ",");
+
+    document.getElementById("basalResult").textContent =
+        Math.round(basal) + " kcal";
+
+    document.getElementById("dailyResult").textContent =
+        Math.round(daily) + " kcal";
 
     resultBox.classList.add("show");
 });
-
-
-/* Inicialização */
-
-indexItems[0].classList.add("active");
-updateWater();
